@@ -7,6 +7,11 @@ from adafruit_servokit import ServoKit
 #defining servo controller board PCA9685 i.e. 16 channel servokit = ServoKit(channels=16)
 kit = ServoKit(channels=16)
 lastcomm=0
+
+climbmode=0 # define input state variable climb mode
+#0: climbmode off, ground mode on
+#1: Climbmode on ground mode off
+
 def ReStart():
     global lastcomm
     # Set channels to the number of servo channels on your kit.
@@ -398,11 +403,72 @@ def turnright():
     lastcomm=3
     pass
 
+def frontlegforward():
+    #leg 1 lift->forward -> Grip
+    kit.servo[1].angle = 30
+    kit.servo[0].angle = 150
+    time.sleep(0.4)
+    kit.servo[1].angle = 90
+
+    #leg 2 lift->forward -> Grip
+    kit.servo[3].angle = 150
+    kit.servo[2].angle = 30
+    time.sleep(0.4)
+    kit.servo[3].angle = 90
+    pass
+
+def rearlegforward():
+    #leg 4 lift->forward -> Grip
+    kit.servo[7].angle = 30
+    kit.servo[6].angle = 30
+    time.sleep(0.4)
+    kit.servo[7].angle = 90
+    
+    #leg 3 lift->forward -> Grip
+    kit.servo[5].angle = 150
+    kit.servo[4].angle = 150
+    time.sleep(0.4)
+    kit.servo[5].angle = 90
+    pass
+
+def frontlegbackward():
+    #leg 1 lift->Downward -> Drop
+    kit.servo[1].angle = 30
+    kit.servo[0].angle = 30
+    time.sleep(0.4)
+    kit.servo[1].angle = 90
+    time.sleep(0.4)
+
+    #leg 2 lift->Downward -> Drop
+    kit.servo[3].angle = 150
+    kit.servo[2].angle = 150
+    time.sleep(0.4)
+    kit.servo[3].angle = 90
+    time.sleep(0.4)
+    pass
+
+def rearlegbackward():
+    #leg 3 lift->Downward -> Drop
+    kit.servo[5].angle = 150
+    kit.servo[4].angle = 30
+    time.sleep(0.4)
+    kit.servo[5].angle = 90
+    time.sleep(0.4)
+
+    #leg 4 lift->Downward -> Drop
+    kit.servo[7].angle = 30
+    kit.servo[6].angle = 150
+    time.sleep(0.4)
+    kit.servo[7].angle = 90
+    time.sleep(0.4)
+    pass
+
 
 #---------------------------------------------------------------
 #        Defining Moves while climbing Functions
 #---------------------------------------------------------------
 def climbMode():
+    global climbmode=1
     print("Climb Mode")
     print("Release the Front Grip for support")
     kit.servo[1].angle =30
@@ -445,7 +511,7 @@ def climbUpward():
     time.sleep(0.4)
     kit.servo[3].angle = 0
     
-    #back stroke
+    #up stroke
     w= 2  #2rad/s=2*180/pi
     th1_c= 0 #initial Th_1
     th1_cmd=60 #Commanded Backward Stroke angle in degrees
@@ -502,8 +568,8 @@ def climbDownward():
     kit.servo[7].angle = 180
     time.sleep(0.4)
 
-    # All legs move forward While in contact with ground,  i.e. body moves forward
-    # Constant speed ground stroke
+    
+    # Down stroke
     w= 2  #2rad/s=2*180/pi
     th1_c= 0 #initial Th_1
     th1_cmd=60 #Commanded Backward Stroke angle in degrees
@@ -535,6 +601,119 @@ def rotateLeft():
 def rotateRight():
     pass
 
+def frontlegclimbup():
+    #leg 1 lift->forward -> Grip
+    kit.servo[1].angle = 30
+    kit.servo[0].angle = 150
+    time.sleep(0.4)
+    kit.servo[1].angle = 180
+
+    #leg 2 lift->forward -> Grip
+    kit.servo[3].angle = 150
+    kit.servo[2].angle = 30
+    time.sleep(0.4)
+    kit.servo[3].angle = 0
+    pass
+
+def rearlegclimbup():
+    #leg 4 lift->forward -> Grip
+    kit.servo[7].angle = 30
+    kit.servo[6].angle = 30
+    time.sleep(0.4)
+    kit.servo[7].angle = 180
+    
+    #leg 3 lift->forward -> Grip
+    kit.servo[5].angle = 150
+    kit.servo[4].angle = 150
+    time.sleep(0.4)
+    kit.servo[5].angle = 0
+    pass
+
+def frontlegclimbdown():
+    #leg 1 lift->Downward -> Drop
+    kit.servo[1].angle = 90
+    kit.servo[0].angle = 60
+    time.sleep(0.4)
+    kit.servo[1].angle = 180
+    time.sleep(0.4)
+
+    #leg 2 lift->Downward -> Drop
+    kit.servo[3].angle = 90
+    kit.servo[2].angle = 120
+    time.sleep(0.4)
+    kit.servo[3].angle = 0
+    time.sleep(0.4)
+    pass
+
+def rearlegclimbdown():
+    #leg 3 lift->Downward -> Drop
+    kit.servo[5].angle = 90
+    kit.servo[4].angle = 60
+    time.sleep(0.4)
+    kit.servo[5].angle = 30
+    time.sleep(0.4)
+
+    #leg 4 lift->Downward -> Drop
+    kit.servo[7].angle = 90
+    kit.servo[6].angle = 120
+    time.sleep(0.4)
+    kit.servo[7].angle = 180
+    time.sleep(0.4)
+    pass
+
+def climbUpStroke():
+    #up stroke
+    w= 2  #2rad/s=2*180/pi
+    th1_c= 0 #initial Th_1
+    th1_cmd=60 #Commanded Backward Stroke angle in degrees
+    R=int(23) # distance from X that has to be maintained suring straight backstroke
+    l1=int(46) #mm
+    b=int(137.44) #mm
+    dt=0.01 #s -time step for fine actuation
+    while th1_c <math.radians(th1_cmd) :
+        th1=th1_c + w*dt
+        th2=2*(math.atan((b/(2*R)) + ((l1*math.cos(th1))/R)))-(math.pi/2)
+        #bodymove stroke
+        kit.servo[0].angle = 30+math.degrees(th1)
+        kit.servo[1].angle=90+math.degrees(th2)
+        kit.servo[2].angle = 30+math.degrees(th1)
+        kit.servo[3].angle=90-math.degrees(th2)
+        kit.servo[4].angle = 30+math.degrees(th1)
+        kit.servo[5].angle=90-math.degrees(th2)
+        kit.servo[6].angle = 30+math.degrees(th1)
+        kit.servo[7].angle=90+math.degrees(th2)
+        th1_c=th1
+        time.sleep(0.01)
+        pass
+
+    pass
+
+def climbDownStroke():
+    # Down stroke
+    w= 2  #2rad/s=2*180/pi
+    th1_c= 0 #initial Th_1
+    th1_cmd=60 #Commanded Backward Stroke angle in degrees
+    R=int(23) # distance from X that has to be maintained suring straight backstroke
+    l1=int(46) #mm
+    b=int(137.44) #mm
+    dt=0.01 #s -time step for fine actuation
+    while th1_c <math.radians(th1_cmd) :
+        th1=th1_c + w*dt
+        th2=2*(math.atan((b/(2*R)) + ((l1*math.cos(th1))/R)))-(math.pi/2)
+        #bodymove stroke
+        kit.servo[0].angle = 90+math.degrees(th1)
+        kit.servo[1].angle=90+math.degrees(th2)
+        kit.servo[2].angle = 150-math.degrees(th1)
+        kit.servo[3].angle=90-math.degrees(th2)
+        kit.servo[4].angle = 90+math.degrees(th1)
+        kit.servo[5].angle=90-math.degrees(th2)
+        kit.servo[6].angle = 150-math.degrees(th1)
+        kit.servo[7].angle=90+math.degrees(th2)
+        th1_c=th1
+        time.sleep(0.01)
+        pass
+    pass
+
 def main():
     ReStart()
     # creates object gamepad
@@ -543,7 +722,8 @@ def main():
     print(gamepad)
     # define codes of the remote controllers
     # Ground Movement
-    lastcomm=0
+    global lastcomm=0
+    global climbmode=0
     frwdBtn = 544
     bkwdBtn = 545
     lftBtn = 546
@@ -562,43 +742,88 @@ def main():
     L1btn=310
     R1btn=311
 
-    #affiche les codes interceptes |  display codes
+    #  display codes
     for event in gamepad.read_loop():
         #Boutons | buttons 
         if event.type == ecodes.EV_KEY:
             #print(event)
             if event.value == 1:
                 if event.code == frwdBtn:
-                    print("Forward")
-                    moveforward()
-
+                    if climbmode==0:
+                        print("Forward")
+                        moveforward()
+                    elif
+                        print("Climb Upward")
+                        climbUpward()
+                        continue
                 elif event.code == bkwdBtn:
-                    print("Backward")
-                    movebackward()
-
+                    if climbmode==0:
+                        print("Backward")
+                        movebackward()
+                    elif
+                        print("Climb Downward")
+                        climbDownward()
+                        continue
                 elif event.code == lftBtn:
-                    print("move left")
-                    turnleft()
+                    if climbmode==0:
+                        print("move left")
+                        turnleft()
+                    elif
+                        print("climb Up Stroke")
+                        climbUpStroke()
+                        continue
                 
                 elif event.code == rgtBtn:
-                    print("move right")
-                    turnright()
+                    if climbmode==0:
+                        print("move right")
+                        turnright()
+                    elif
+                        print("climb Down Stroke")
+                        climbDownStroke()
+                        continue
                 
                 elif event.code == triangleBtn:
-                    print("Climb Upward")
-                    climbUpward()
-                
-                elif event.code == xBtn:
-                    print("Climb Downward")
-                    climbDownward()
+                    if climbmode==0:
+
+                        ### need something here
+                        print("front leg forward")
+                        frontlegforward()
+                    elif
+                        print("Front Leg Climb Up")
+                        frontlegclimbup()
+                        continue
+                    
                 
                 elif event.code == squareBtn:
-                    print("Move Left")
-                    moveLeft()
+                    if climbmode==0:
+                        ### need something here
+                        print("front leg backward")
+                        frontlegbackward()
+                    elif
+                        print("front leg climb down")
+                        frontlegclimbdown()
+                        continue
+                
                 
                 elif event.code == oBtn:
-                    print("Move Right")
-                    moveRight()
+                    if climbmode==0:
+                        ### need something here
+                        print("rear leg forward")
+                        rearlegforward()
+                    elif
+                        print("Rear Leg Climb Up")
+                        rearlegclimbup()
+                        continue
+
+                elif event.code == xBtn:
+                    if climbmode==0:
+                        ### need something here
+                        print("rear leg backward")
+                        rearlegbackward()
+                    elif
+                        print("rear leg climb down")
+                        rearlegclimbdown()
+                        continue
                 
                 elif event.code == L1btn:
                     if kit.servo[1].angle>=0 and kit.servo[1].angle<=170 and kit.servo[3].angle>=10 and kit.servo[3].angle<=180:
@@ -623,7 +848,7 @@ def main():
                     ReStart()
             elif event.value == 0:
               print("Release")
-        #Gamepad analogique | Analog gamepad
+        # Analog gamepad
         elif event.type == ecodes.EV_ABS:
             absevent = categorize(event)
             #print ecodes.bytype[absevent.event.type][absevent.event.code], absevent.event.value
@@ -676,7 +901,6 @@ def main():
     pass
 
 if __name__ == '__main__':
-    lastcomm=0
     main()
 #Implementation code
 
