@@ -14,6 +14,8 @@ climbmode=0 # define input state variable climb mode
 
 def ReStart():
     global lastcomm
+    global climbmode
+    climbmode=0
     # Set channels to the number of servo channels on your kit.
     # 8 for FeatherWing, 16 for Shield/HAT/Bonnet.
     #Setting pulse width range for all servos and setting them to its initial mean position
@@ -468,7 +470,8 @@ def rearlegbackward():
 #        Defining Moves while climbing Functions
 #---------------------------------------------------------------
 def climbMode():
-    global climbmode=1
+    global climbmode
+    climbmode=1
     print("Climb Mode")
     print("Release the Front Grip for support")
     kit.servo[1].angle =30
@@ -722,8 +725,10 @@ def main():
     print(gamepad)
     # define codes of the remote controllers
     # Ground Movement
-    global lastcomm=0
-    global climbmode=0
+    global lastcomm
+    lastcomm=0
+    global climbmode
+    climbmode=0
     frwdBtn = 544
     bkwdBtn = 545
     lftBtn = 546
@@ -752,7 +757,7 @@ def main():
                     if climbmode==0:
                         print("Forward")
                         moveforward()
-                    elif
+                    elif climbmode==1:
                         print("Climb Upward")
                         climbUpward()
                         continue
@@ -760,7 +765,7 @@ def main():
                     if climbmode==0:
                         print("Backward")
                         movebackward()
-                    elif
+                    elif climbmode==1:
                         print("Climb Downward")
                         climbDownward()
                         continue
@@ -768,7 +773,7 @@ def main():
                     if climbmode==0:
                         print("move left")
                         turnleft()
-                    elif
+                    elif climbmode==1:
                         print("climb Up Stroke")
                         climbUpStroke()
                         continue
@@ -777,7 +782,7 @@ def main():
                     if climbmode==0:
                         print("move right")
                         turnright()
-                    elif
+                    elif climbmode==1:
                         print("climb Down Stroke")
                         climbDownStroke()
                         continue
@@ -788,7 +793,7 @@ def main():
                         ### need something here
                         print("front leg forward")
                         frontlegforward()
-                    elif
+                    elif climbmode==1:
                         print("Front Leg Climb Up")
                         frontlegclimbup()
                         continue
@@ -799,7 +804,7 @@ def main():
                         ### need something here
                         print("front leg backward")
                         frontlegbackward()
-                    elif
+                    elif climbmode==1:
                         print("front leg climb down")
                         frontlegclimbdown()
                         continue
@@ -810,7 +815,7 @@ def main():
                         ### need something here
                         print("rear leg forward")
                         rearlegforward()
-                    elif
+                    elif climbmode==1:
                         print("Rear Leg Climb Up")
                         rearlegclimbup()
                         continue
@@ -820,7 +825,7 @@ def main():
                         ### need something here
                         print("rear leg backward")
                         rearlegbackward()
-                    elif
+                    elif climbmode==1:
                         print("rear leg climb down")
                         rearlegclimbdown()
                         continue
